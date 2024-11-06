@@ -21,6 +21,11 @@ response = requests.get(dashboards_url, headers={
     'DD-APPLICATION-KEY': app_key
 })
 
+# Initialize counters
+exported_count = 0
+failed_count = 0
+skipped_count = 0
+
 # Check for a successful response
 if response.status_code == 200:
     dashboards = response.json()
@@ -60,6 +65,7 @@ if response.status_code == 200:
         # Check if the file already exists, and skip if it does
         if os.path.exists(dashboard_file):
             print(f"Dashboard {dashboard_id} already exists. Skipping export.")
+            skipped_count += 1
             continue
         
         # Fetch the dashboard if it doesn't exist
@@ -70,8 +76,16 @@ if response.status_code == 200:
             with open(dashboard_file, 'w') as f:
                 json.dump(dashboard_data, f, indent=4)
             print(f"Dashboard {dashboard_id} has been exported to {dashboard_file}")
+            exported_count += 1
         else:
             print(f"Failed to fetch dashboard {dashboard_id} after retries")
+            failed_count += 1
+
+    # Print summary
+    print("\nExport Summary:")
+    print(f"Exported: {exported_count}")
+    print(f"Failed: {failed_count}")
+    print(f"Skipped: {skipped_count}")
 
 else:
     print(f"Error fetching dashboards: {response.status_code}")
