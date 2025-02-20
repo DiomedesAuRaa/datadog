@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: datadog-agent
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://helm.datadoghq.com
+    chart: datadog
+    targetRevision: 3.0.0 # Use the latest version
+    helm:
+      values: |
+        datadog:
+          apiKey: <YOUR_DATADOG_API_KEY>
+          appKey: <YOUR_DATADOG_APP_KEY>
+          clusterName: my-cluster
+          tags:
+            - env:prod
+            - region:us-east-1
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: datadog
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
